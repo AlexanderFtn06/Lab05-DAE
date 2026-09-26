@@ -26,3 +26,13 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Browser/debug output (generated during view testing)
+output*.html
+css_output.txt
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.pdf
