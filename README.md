@@ -141,3 +141,4 @@ Luego abre:
 
 <img width="1810" height="941" alt="image" src="https://github.com/user-attachments/assets/d7e0be3f-1ac6-4ee9-9f29-7f9ecc64a8c8" />
 
+<img width="1781" height="935" alt="image" src="https://github.com/user-attachments/assets/0953acb4-9099-40fc-9065-a31907b4b0f1" />
