@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,13 +11,13 @@
     <header class="site-header">
         <div class="container">
             <h1 class="site-title">🎬 Cinema Vault</h1>
-            <p class="site-tagline">Movie Details</p>
+            <p class="site-tagline">Detalles de la película</p>
         </div>
     </header>
 
     <main class="container">
-        <a href="{{ back_url }}" class="back-link" aria-label="Back to recommendations">
-            ← Back
+        <a href="{{ back_url }}" class="back-link" aria-label="Volver al listado">
+            ← Volver al listado
         </a>
 
         <article class="movie-detail">
@@ -36,46 +36,46 @@
                         {% endfor %}
                     </div>
                     <div class="movie-detail-rating">
-                        <div class="rating-stars" aria-label="Average rating: {{ avg_rating|floatformat:1 }}/10">
+                        <div class="rating-stars" aria-label="Valoración promedio: {{ avg_rating|floatformat:1 }}/10">
                             {% for _ in ""|rjust:stars_full %}<span class="star">★</span>{% endfor %}
                             {% if stars_half %}<span class="star">½</span>{% endif %}
                             {% for _ in ""|rjust:stars_empty %}<span class="star empty">★</span>{% endfor %}
                         </div>
                         {% if avg_rating %}
                         <span class="rating-value">{{ avg_rating|floatformat:1 }}</span>
-                        <span class="rating-count">({{ rating_count }} review{{ rating_count|pluralize }})</span>
+                        <span class="rating-count">({{ rating_count }} reseña{{ rating_count|pluralize }})</span>
                         {% else %}
                         <span class="rating-value">N/A</span>
-                        <span class="rating-count">No ratings yet</span>
+                        <span class="rating-count">Sin valoraciones aún</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
             <div class="movie-detail-synopsis">
-                <h3 class="section-title">Synopsis</h3>
+                <h3 class="section-title">Sinopsis</h3>
                 {% if movie.synopsis %}
                 <p>{{ movie.synopsis }}</p>
                 {% else %}
-                <p class="text-muted">No synopsis available.</p>
+                <p class="text-muted">No hay sinopsis disponible.</p>
                 {% endif %}
             </div>
 
             <div class="movie-detail-ratings">
-                <h3 class="section-title">Individual Ratings</h3>
+                <h3 class="section-title">Valoraciones Individuales</h3>
                 {% if ratings %}
                 <ul class="ratings-list">
                     {% for rating in ratings %}
                     <li class="rating-item">
                         <div class="rating-header">
-                            <div class="rating-stars" aria-label="Rating: {{ rating.score }}/10">
+                            <div class="rating-stars" aria-label="Valoración: {{ rating.score }}/10">
                                 {% for _ in ""|rjust:rating.stars_full %}<span class="star">★</span>{% endfor %}
                                 {% if rating.stars_half %}<span class="star">½</span>{% endif %}
                                 {% for _ in ""|rjust:rating.stars_empty %}<span class="star empty">★</span>{% endfor %}
                             </div>
                             <span class="rating-value">{{ rating.score }}/10</span>
                             <time class="rating-date" datetime="{{ rating.created_at|date:'c' }}">
-                                {{ rating.created_at|date:"M d, Y" }}
+                                {{ rating.created_at|date:"d M Y" }}
                             </time>
                         </div>
                         {% if rating.comment %}
@@ -85,7 +85,7 @@
                     {% endfor %}
                 </ul>
                 {% else %}
-                <p class="text-muted">No individual ratings yet.</p>
+                <p class="text-muted">No hay valoraciones individuales aún.</p>
                 {% endif %}
             </div>
         </article>
@@ -93,7 +93,7 @@
 
     <footer class="site-footer">
         <div class="container">
-            <p>Cinema Vault — Dark Theme Movie Recommendations</p>
+            <p>Cinema Vault — Recomendaciones de películas con tema oscuro</p>
         </div>
     </footer>
 </body>

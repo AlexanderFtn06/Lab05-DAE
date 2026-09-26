@@ -13,17 +13,16 @@ def movie_recommendations(request, genre_slug=None):
     genres = Genre.objects.annotate(movie_count=Count("movies")).filter(movie_count__gt=0)
     
     if genre_slug:
-        # Convert slug back to genre name (replace hyphens with spaces, case-insensitive lookup)
-        genre_name = genre_slug.replace("-", " ")
-        genre = get_object_or_404(Genre, name__iexact=genre_name)
+        # Look up genre by slug field (handles accented names correctly)
+        genre = get_object_or_404(Genre, slug=genre_slug)
         movies = Movie.objects.filter(genres=genre)
-        section_title = f"Recommendations: {genre.name}"
+        section_title = f"Recomendaciones: {genre.name}"
         genre_badge = genre.name
     else:
         genre = None
         movies = Movie.objects.all()
-        section_title = "Top Rated Movies"
-        genre_badge = "All Genres"
+        section_title = "Las Mejor Valoradas"
+        genre_badge = "Todos los géneros"
     
     # Annotate with average rating and rating count
     movies = movies.annotate(
