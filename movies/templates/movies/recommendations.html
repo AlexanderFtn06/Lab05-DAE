@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if current_genre %}{{ current_genre.name }} - {% endif %}Movie Recommendations</title>
+    <link rel="stylesheet" href="{% static 'movies/style.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title">🎬 Cinema Vault</h1>
+            <p class="site-tagline">Discover your next favorite film</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav class="genre-nav" aria-label="Genre navigation">
+            <a href="{% url 'movies:movie_recommendations' %}" 
+               class="genre-nav-link {% if not current_genre %}active{% endif %}">
+                All Genres
+            </a>
+            {% for g in genres %}
+            <a href="{% url 'movies:movie_recommendations_genre' g.name|slugify %}" 
+               class="genre-nav-link {% if current_genre and g.name == current_genre.name %}active{% endif %}">
+                {{ g.name }} ({{ g.movie_count }})
+            </a>
+            {% endfor %}
+        </nav>
+
+        <div class="section-header">
+            <h2 class="section-title">{{ section_title }}</h2>
+            <span class="genre-badge">{{ genre_badge }}</span>
+        </div>
+
+        {% if movies %}
+        <div class="movie-grid">
+            {% for movie in movies %}
+            <article class="movie-card">
+                {% if movie.poster %}
+                <img src="{{ movie.poster.url }}" alt="{{ movie.title }} poster" class="movie-poster" loading="lazy">
+                {% else %}
+                <div class="movie-poster-placeholder" aria-hidden="true">🎞️</div>
+                {% endif %}
+                <div class="movie-info">
+                    <h3 class="movie-title">{{ movie.title }}</h3>
+                    <p class="movie-year">{{ movie.release_year }}</p>
+                    <div class="movie-genres">
+                        {% for genre in movie.genres.all %}
+                        <span class="genre-tag">{{ genre.name }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="movie-rating">
+                        <div class="rating-stars" aria-label="Rating: {{ movie.avg_rating|floatformat:1 }}/10">
+                            {% for _ in ""|rjust:movie.stars_full %}<span class="star">★</span>{% endfor %}
+                            {% if movie.stars_half %}<span class="star">½</span>{% endif %}
+                            {% for _ in ""|rjust:movie.stars_empty %}<span class="star empty">★</span>{% endfor %}
+                        </div>
+                        <span class="rating-value">{{ movie.avg_rating|floatformat:1 }}</span>
+                        <span class="rating-count">({{ movie.rating_count }} reviews)</span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🎬</div>
+            <h3>No movies found</h3>
+            <p>No rated movies available for this genre yet.</p>
+        </div>
+        {% endif %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>Cinema Vault — Dark Theme Movie Recommendations</p>
+        </div>
+    </footer>
+</body>
+</html>
