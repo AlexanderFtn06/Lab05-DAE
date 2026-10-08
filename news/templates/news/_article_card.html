@@ -5,7 +5,7 @@
     {% if article.featured_image %}
         <img class="card-image" src="{{ article.featured_image.url }}" alt="{{ article.title }}">
     {% else %}
-        <div class="card-image card-image--placeholder" aria-label="No image available"></div>
+        <div class="card-image card-image--placeholder" aria-label="Sin imagen"></div>
     {% endif %}
 
     <!-- Meta: categories and publication date -->
@@ -18,7 +18,7 @@
             {% endfor %}
         </div>
         <time class="card-date" datetime="{{ article.published_at|date:"c" }}">
-            {{ article.published_at|date:"j \d\e F \d\e Y" }}
+            {{ article.published_at|date:"d/m/Y" }}
         </time>
     </div>
 
