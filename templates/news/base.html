@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<!-- Base template for the news portal. All news templates extend this file. -->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Meridiano{% endblock %}</title>
+    {% load static %}
+    <!-- Stylesheet loaded in child templates or via staticfiles configuration -->
+    {# <link rel="stylesheet" href="{% static 'news/style.css' %}"> #}
+</head>
+<body>
+    <!-- Magazine-style header with portal name and category navigation -->
+    <header class="site-header">
+        <h1 class="site-title">Meridiano</h1>
+        <nav class="main-nav" aria-label="Main navigation">
+            <ul>
+                <li><a href="#">Home</a></li>
+                {% for category in categories %}
+                    <li><a href="#">{{ category.name }}</a></li>
+                {% empty %}
+                    <li><span class="no-categories">No categories available</span></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main content area with content block and sidebar block -->
+    <main class="site-main">
+        <!-- Primary content block for page-specific content -->
+        <section class="content-area" aria-label="Main content">
+            {% block content %}{% endblock %}
+        </section>
+
+        <!-- Sidebar block with default category list widget -->
+        <aside class="sidebar" aria-label="Sidebar">
+            {% block sidebar %}
+                <div class="widget categories-widget">
+                    <h2>Categories</h2>
+                    <ul>
+                        {% for category in categories %}
+                            <li><a href="#">{{ category.name }}</a></li>
+                        {% empty %}
+                            <li><span class="no-categories">No categories available</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endblock %}
+        </aside>
+    </main>
+
+    <!-- Simple footer with copyright notice -->
+    <footer class="site-footer">
+        <p>&copy; 2024 Meridiano. All rights reserved.</p>
+    </footer>
+</body>
+</html>
