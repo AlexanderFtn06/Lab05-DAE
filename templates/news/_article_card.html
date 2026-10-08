@@ -1,0 +1,35 @@
+{# Article card fragment for reusable display in home page and category listing #}
+{# Receives: article (Article instance) #}
+<article class="article-card">
+    <!-- Featured image or placeholder fallback -->
+    {% if article.featured_image %}
+        <img class="card-image" src="{{ article.featured_image.url }}" alt="{{ article.title }}">
+    {% else %}
+        <div class="card-image card-image--placeholder" aria-label="No image available"></div>
+    {% endif %}
+
+    <!-- Meta: categories and publication date -->
+    <div class="card-meta">
+        <div class="card-categories">
+            {% for category in article.categories.all %}
+                <span class="card-category">{{ category.name }}</span>
+            {% empty %}
+                <span class="card-category card-category--none">Sin categoría</span>
+            {% endfor %}
+        </div>
+        <time class="card-date" datetime="{{ article.published_at|date:"c" }}">
+            {{ article.published_at|date:"j \d\e F \d\e Y" }}
+        </time>
+    </div>
+
+    <!-- Title linking to detail (placeholder href) -->
+    <h3 class="card-title">
+        <a href="#">{{ article.title }}</a>
+    </h3>
+
+    <!-- Summary truncated to 30 words -->
+    <p class="card-summary">{{ article.summary|truncatewords:30 }}</p>
+
+    <!-- Author name -->
+    <p class="card-author">Por {{ article.author.first_name }} {{ article.author.last_name }}</p>
+</article>
