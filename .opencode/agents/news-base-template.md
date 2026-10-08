@@ -8,23 +8,26 @@ tools:
 
 # news-base-template
 
-## Objetivo
-Crear la plantilla base `templates/news/base.html` con la estructura común del portal de noticias.
-
 ## Instrucciones
-1. Crear el archivo `templates/news/base.html` (directorio `templates/` en la raíz del proyecto).
-2. Estructura HTML5 completa con:
-   - `<head>`: meta charset, viewport, título con bloque `{% block title %}News Portal{% endblock %}`, carga de estáticos con `{% load static %}`, enlace a `news/static/news/style.css`.
-   - `<body>`: 
-     - **Cabecera** (`<header>`): nombre del portal, navegación principal con enlaces a categorías (usar `{% url 'news:home %}` y URLs de categorías dinámicas si aplica).
-     - **Contenido principal** (`<main>`): bloque `{% block content %}{% endblock %}`.
-     - **Barra lateral** (`<aside>`): bloque `{% block sidebar %}{% endblock %}` (opcional, para widgets futuros).
-     - **Pie** (`<footer>`): copyright, enlaces legales.
-3. Usar clases CSS semánticas para que `news-static-design` pueda estilizar luego.
-4. Todas las plantillas de `news` heredarán de esta con `{% extends "news/base.html" %}`.
+
+Crear `templates/news/base.html` (en la carpeta `templates/` de la raíz del proyecto, con prefijo `news/` para no pisar `library/templates/base.html`):
+
+Estructura requerida:
+- `<!DOCTYPE html>`, `<html>`, `<head>`, `<body>`
+- **Cabecera** (`<header>`): Título del portal, navegación principal (enlaces a home, categorías)
+- **Contenido principal** (`<main>`): Bloque `{% block content %}{% endblock %}`
+- **Barra lateral** (`<aside>`): Bloque `{% block sidebar %}{% endblock %}` (opcional, para widgets)
+- **Pie** (`<footer>`): Copyright, enlaces legales
+- **Bloques obligatorios**:
+  - `{% block title %}News Portal{% endblock %}` - en `<title>`
+  - `{% block content %}{% endblock %}` - contenido principal
+  - `{% block sidebar %}{% endblock %}` - barra lateral
+- Cargar estáticos: `{% load static %}` al inicio
+- Enlazar CSS: `<link rel="stylesheet" href="{% static 'news/style.css' %}">`
 
 ## Reglas
-- Código y comentarios en INGLÉS.
-- Plantilla en `templates/news/base.html` (prefijo `news/` para no pisar `library/templates/base.html`).
-- Sin lógica de negocio; solo estructura y bloques.
-- Seguir `docs/news-data-model-spec.md` como única fuente de verdad.
+
+- Todas las plantillas de news usan prefijo `news/`
+- Herencia: `{% extends "news/base.html" %}`
+- Código y comentarios en INGLÉS
+- No lógica de negocio en plantillas

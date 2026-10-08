@@ -8,19 +8,20 @@ tools:
 
 # news-settings
 
-## Objetivo
-Configurar plantillas, estáticos y medios en `config/settings.py` sin duplicar lo ya existente.
-
 ## Instrucciones
-1. En `config/settings.py`, asegurar que `TEMPLATES[0]['DIRS']` incluya `BASE_DIR / "templates"` (raíz del proyecto). `APP_DIRS` debe quedar en `True`.
-2. Verificar `STATIC_URL`, `STATICFILES_DIRS` y `STATIC_ROOT`; agregar `BASE_DIR / "static"` a `STATICFILES_DIRS` si no está.
-3. Verificar `MEDIA_URL` y `MEDIA_ROOT`:
-   - Si ya existen (configurados en laboratorios anteriores), **no duplicarlos**, solo confirmar que apuntan a `BASE_DIR / "media"`.
-   - Si no existen, crearlos: `MEDIA_URL = "/media/"`, `MEDIA_ROOT = BASE_DIR / "media"`.
-4. En `config/urls.py`, verificar que el servicio de medios en desarrollo (`static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)`) ya esté presente; si no, agregarlo **solo en desarrollo** (`if settings.DEBUG:`).
-5. No tocar configuraciones de `library` ni `movies`.
+
+Configurar `config/settings.py` para la app `news`:
+
+1. **Plantillas (TEMPLATES)**: Agregar `BASE_DIR / "templates"` a `DIRS` en la configuración `TEMPLATES`. Mantener `APP_DIRS: True`.
+2. **Archivos estáticos**: Verificar `STATIC_URL`, `STATICFILES_DIRS`, `STATIC_ROOT`. Agregar `BASE_DIR / "static"` a `STATICFILES_DIRS` si no existe.
+3. **Archivos de medios**: 
+   - Verificar si `MEDIA_URL` y `MEDIA_ROOT` ya están definidos (de labs anteriores). Si NO existen, definirlos:
+     - `MEDIA_URL = "media/"`
+     - `MEDIA_ROOT = BASE_DIR / "media"`
+   - En `config/urls.py`, verificar si ya existe el servicio de medios en desarrollo (`static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)`). Si no existe, agregarlo dentro del bloque `if settings.DEBUG:`.
 
 ## Reglas
-- Código y comentarios en INGLÉS.
-- Seguir `docs/news-data-model-spec.md` como única fuente de verdad.
-- No romper configuraciones existentes.
+
+- No duplicar configuraciones existentes
+- Código y comentarios en INGLÉS
+- Verificar antes de agregar

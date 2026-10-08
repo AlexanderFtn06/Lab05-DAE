@@ -9,51 +9,51 @@ tools:
 
 # news-pages
 
-## Objetivo
-Implementar vistas y plantillas para: portada (home), detalle de artículo y listado por categoría.
-
 ## Instrucciones
 
-### 1. Vistas en `news/views.py`
-- **home(request)**: 
-  - Query: `Article.objects.select_related("author").prefetch_related("categories").all()[:10]` (o paginar luego).
-  - Contexto: `{"articles": articles}`.
-  - Template: `news/home.html`.
-- **article_detail(request, slug)**:
-  - Query: `Article.objects.select_related("author").prefetch_related("categories").get(slug=slug)`.
-  - Contexto: `{"article": article}`.
-  - Template: `news/article_detail.html`.
-- **category_detail(request, slug)**:
-  - Query: `Category.objects.prefetch_related("articles__author", "articles__categories").get(slug=slug)`.
-  - Artículos: `category.articles.select_related("author").prefetch_related("categories").all()`.
-  - Contexto: `{"category": category, "articles": articles}`.
-  - Template: `news/category_detail.html`.
+### Vistas en `news/views.py`
 
-### 2. Plantillas (todas en `news/templates/news/`, heredando `{% extends "news/base.html" %}`)
+1. **home** (portada):
+   - Query: `Article.objects.select_related("author").prefetch_related("categories").filter(published_at__lte=timezone.now())[:10]`
+   - Template: `news/home.html`
+   - Context: `{"articles": articles}`
 
-#### `home.html` (portada)
+2. **article_detail**:
+   - Query: `get_object_or_404(Article.objects.select_related("author").prefetch_related("categories"), slug=slug, published_at__lte=timezone.now())`
+   - Template: `news/article_detail.html`
+   - Context: `{"article": article}`
+
+3. **category_detail**:
+   - Query: `get_object_or_404(Category, slug=slug)`
+   - Artículos: `category.articles.select_related("author").prefetch_related("categories").filter(published_at__lte=timezone.now())`
+   - Template: `news/category_detail.html`
+   - Context: `{"category": category, "articles": articles}`
+
+### Plantillas (heredan de `news/base.html`)
+
+**news/home.html** (portada):
 - Bloque `content`: 
-  - **Noticia destacada** (primer artículo): tarjeta grande con imagen, título, resumen, autor, fecha, categorías.
-  - **Resto en cuadrícula**: `{% for article in articles|slice:"1:" %}` → `{% include "news/_article_card.html" with article=article %}`.
-  - `{% empty %}`: mensaje "No hay noticias publicadas aún."
-- Bloque `sidebar`: categorías con conteo (opcional), enlaces a `{% url 'news:category_detail' cat.slug %}`.
+  - Noticia destacada (primera): tarjeta grande con imagen, título, resumen, autor, fecha, categorías
+  - Resto: grid de tarjetas usando `{% for article in articles|slice:"1:" %}` + `{% include "news/_article_card.html" %}`
+  - `{% empty %}`: "No hay noticias publicadas"
+- Bloque `sidebar`: categorías con enlace a `category_detail`
 
-#### `article_detail.html`
-- Bloque `content`: artículo completo con imagen destacada (o fallback), título, cuerpo (`{{ article.body|linebreaks }}`), autor (con bio y foto si hay), categorías (badges con enlaces), fecha.
-- Bloque `sidebar`: artículos relacionados (misma categoría, excluyendo el actual), "Leer más".
+**news/article_detail.html**:
+- Imagen destacada (o fallback)
+- Título, cuerpo completo (`linebreaks`), autor (con bio y foto), categorías (badges con enlaces), fecha
+- Artículos relacionados (misma categoría, excluir actual)
 
-#### `category_detail.html`
-- Bloque `content`: título de categoría, descripción.
-- Grid de tarjetas: `{% for article in articles %}{% include "news/_article_card.html" with article=article %}{% empty %}Sin noticias en esta categoría.{% endfor %}`.
+**news/category_detail.html**:
+- Título de categoría
+- Grid de tarjetas: `{% for article in articles %}{% include "news/_article_card.html" %}{% empty %}Sin noticias{% endfor %}`
 
-### 3. Verificación sin rutas
-- En shell: `python manage.py shell -c "from django.template.loader import render_to_string; from news.views import home; from django.http import HttpRequest; req = HttpRequest(); print(render_to_string('news/home.html', home(req).context_data))"` (adaptar según implementación).
-- No crear URLs todavía (paso 9).
+### Verificación (sin URLs aún)
+- `python manage.py shell -c "from django.template.loader import render_to_string; from news.views import home; from django.test import RequestFactory; factory = RequestFactory(); request = factory.get('/'); print(render_to_string('news/home.html', home(request).context_data))"`
 
 ## Reglas
-- Código y comentarios en INGLÉS.
-- Usar `select_related` / `prefetch_related` para evitar N+1.
-- Filtros en plantilla: `date`, `truncatewords`, `linebreaks`.
-- `{% for %}` / `{% empty %}` en bucles.
-- Sin `|safe` ni lógica de negocio.
-- Seguir `docs/news-data-model-spec.md` como única fuente de verdad.
+
+- `select_related` / `prefetch_related` obligatorios
+- Filtros: `date`, `truncatewords`, `linebreaks`
+- `{% for %}` / `{% empty %}`
+- Sin `|safe` ni lógica de negocio
+- Código y comentarios en INGLÉS

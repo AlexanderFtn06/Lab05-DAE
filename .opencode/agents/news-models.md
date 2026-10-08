@@ -9,22 +9,46 @@ tools:
 
 # news-models
 
-## Objetivo
-Declarar los modelos `Author`, `Category` y `Article` en `news/models.py` según la especificación.
-
 ## Instrucciones
-1. En `news/models.py`, crear las tres clases con sus campos, `Meta` y `__str__` exactamente como dice `docs/news-data-model-spec.md`.
-2. **Justificar cada relación** en comentarios antes de escribirla:
-   - `Article.author`: ForeignKey a `Author`, `on_delete=PROTECT`, `related_name="articles"` → *Borrar un autor no debe arrastrar sus noticias publicadas.*
-   - `Article.categories`: ManyToManyField a `Category`, `related_name="articles"` → *Una noticia puede tener varias categorías y una categoría varias noticias.*
-3. Importar `timezone` de `django.utils` para el `default` de `published_at`.
-4. Generar migraciones: `python manage.py makemigrations news`.
-5. Aplicar migraciones: `python manage.py migrate`.
-6. Verificar que el superusuario existente sigue funcionando: `python manage.py shell -c "from django.contrib.auth import get_user_model; print(get_user_model().objects.filter(is_superuser=True).exists())"`.
-   - **No crear otro superusuario**, reutilizar el que ya existe.
+
+Declarar los modelos en `news/models.py` según `docs/news-data-model-spec.md`:
+
+### Author
+- `first_name`: CharField(max_length=100)
+- `last_name`: CharField(max_length=100)
+- `bio`: TextField(blank=True)
+- `photo`: ImageField(upload_to="authors/", blank=True, null=True)
+- Meta: `ordering = ["last_name", "first_name"]`
+- `__str__`: return f"{self.first_name} {self.last_name}"
+
+### Category
+- `name`: CharField(max_length=100, unique=True)
+- `slug`: SlugField(max_length=100, unique=True)
+- `description`: TextField(blank=True)
+- Meta: `ordering = ["name"]`, `verbose_name_plural = "categories"`
+- `__str__`: return self.name
+
+### Article
+- `title`: CharField(max_length=200)
+- `slug`: SlugField(max_length=200, unique=True)
+- `summary`: TextField()
+- `body`: TextField()
+- `featured_image`: ImageField(upload_to="articles/", blank=True, null=True)
+- `published_at`: DateTimeField(default=timezone.now)
+- `author`: ForeignKey(Author, on_delete=PROTECT, related_name="articles")
+  - **Justificación**: PROTECT evita borrar un autor que tenga artículos publicados
+- `categories`: ManyToManyField(Category, related_name="articles", blank=True)
+  - **Justificación**: Un artículo puede tener múltiples categorías y viceversa
+- Meta: `ordering = ["-published_at"]`
+- `__str__`: return self.title
+
+### Pasos posteriores
+1. `python manage.py makemigrations news`
+2. `python manage.py migrate`
+3. Verificar superusuario existente: `python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(is_superuser=True).exists())"` - NO crear otro
 
 ## Reglas
-- Código y comentarios en INGLÉS.
-- Nombres de modelos en singular, campos exactamente como en el spec.
-- No modificar `library` ni `models` de otras apps.
-- Seguir `docs/news-data-model-spec.md` como única fuente de verdad.
+
+- Código y comentarios en INGLÉS
+- Justificar cada relación ANTES de escribirla
+- Seguir exactamente el spec

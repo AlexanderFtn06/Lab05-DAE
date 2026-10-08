@@ -9,26 +9,42 @@ tools:
 
 # news-escaping
 
-## Objetivo
-Verificar y documentar el escapado automático de Django en plantillas.
-
 ## Instrucciones
-1. En el admin (`/admin/news/article/add/`), crear una **noticia de prueba** temporal:
-   - Título: "Test Escaping"
-   - Slug: "test-escaping"
-   - Cuerpo: `<script>alert('xss')</script> <b>Negrita</b> & "comillas" <tag>`
-   - Autor y categoría cualquiera.
-   - Publicar.
-2. Visitar `/news/article/test-escaping/` en el navegador.
-3. **Observar y documentar**: el HTML se muestra **como texto plano** (entidades: `<script>alert('xss')</script> <b>Negrita</b> & "comillas" <tag>`). Django escapa automáticamente `<`, `>`, `&`, `'` y `"` en variables `{{ ... }}`.
-4. **Contraste con `|safe`** (solo para documentación, **nunca en plantillas del proyecto**):
-   - En shell: `python manage.py shell -c "from django.template import Template, Context; t = Template('{{ body|safe }}'); print(t.render(Context({'body': \"<b>hola</b>\"})))"` → muestra HTML renderizado.
-   - Explicar: `|safe` desactiva el escapado; **peligroso** si el contenido viene de usuarios.
-5. **Eliminar la noticia de prueba** desde el admin o shell para que solo queden las 6 oficiales.
-6. Añadir una nota en la documentación final (paso 13) explicando esto.
+
+### 1. Crear noticia de prueba (via admin o shell)
+- Título: "Test Escaping"
+- Slug: "test-escaping"
+- Body: `<script>alert('xss')</script> <b>Bold</b> & "quotes" <tag>`
+- Publicar
+
+### 2. Verificar en el navegador
+- Ir a `/news/article/test-escaping/`
+- **Observar**: El HTML se muestra como **texto plano** (entidades: `<script>alert('xss')</script> <b>Bold</b> & "quotes" <tag>`)
+- **Por qué**: Django autoescape convierte `<`, `>`, `&`, `'`, `"` en entidades HTML automáticamente en `{{ variable }}`
+
+### 3. Contraste con `|safe` (SOLO en shell/documentación, NUNCA en plantillas)
+```bash
+python manage.py shell -c "
+from django.template import Template, Context
+t = Template('{{ body|safe }}')
+print(t.render(Context({'body': '<b>Hola</b> <script>alert(1)</script>'})))
+"
+```
+- Resultado: HTML renderizado (negrita + script ejecutable)
+- **Explicar**: `|safe` desactiva autoescape - PELIGROSO si contenido viene de usuarios
+
+### 4. Limpiar
+- Eliminar noticia de prueba ("Test Escaping")
+- Quedar solo las 6 oficiales
+
+### 5. Documentar
+- Qué se ve en la página
+- Por qué (autoescape activo)
+- Contraste con `|safe` solo en docs
 
 ## Reglas
-- Código y comentarios en INGLÉS.
-- **Nunca** usar `|safe` ni `{% autoescape off %}` en plantillas del proyecto.
-- El escapado automático debe permanecer activo siempre.
-- Seguir `docs/news-data-model-spec.md` como única fuente de verdad.
+
+- NUNCA usar `|safe` ni `{% autoescape off %}` en plantillas del proyecto
+- Autoescape DEBE permanecer activo
+- Código y comentarios en INGLÉS
+- Explicación para usuario en ESPAÑOL

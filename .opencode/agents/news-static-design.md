@@ -8,34 +8,41 @@ tools:
 
 # news-static-design
 
-## Objetivo
-Implementar el diseño visual "revista editorial oscura" en `news/static/news/style.css` y asegurar que estáticos y medios se sirvan correctamente.
-
 ## Instrucciones
-1. Crear `news/static/news/style.css` con:
-   - **Paleta**: 
-     - Fondo: `#0f0f10` o `#141414`
-     - Superficies: `#1c1c1e`
-     - Texto principal: `#ececec`
-     - Acentos: `#ff6b35` (naranja) / `#ff7f6b` (coral)
-   - **Tipografía**:
-     - Titulares: `font-family: Georgia, "Times New Roman", serif;`
-     - Cuerpo: `font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;`
-   - **Layout**:
-     - Cabecera tipo revista: logo + nav categorías (flex, responsive).
-     - Portada: noticia destacada grande (hero) + grid de tarjetas (CSS Grid, `auto-fit`, `minmax(280px, 1fr)`).
-     - Tarjeta (`_article_card.html`): imagen (aspect-ratio 16:9), badge categoría (acento naranja), título, resumen recortado, fecha, autor.
-     - Sidebar: widgets en `aside` (categorías, noticias recientes).
-     - Detalle: imagen hero, cuerpo con `linebreaks`, metadatos (autor, categorías, fecha).
-   - **Interacciones**: hover suave en tarjetas (`transform: translateY(-4px)`, `box-shadow`), enlaces con transición de color.
-   - **Responsive**: breakpoints en 768px y 1024px; grid a 1 columna en móvil, 2 en tablet, 3-4 en desktop.
-   - **Fallback imagen**: degradado CSS (ej. `background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)`) en contenedor de imagen cuando no hay `featured_image`.
-2. En `base.html`, confirmar `{% load static %}` y `<link rel="stylesheet" href="{% static 'news/style.css' %}">`.
-3. Verificar que `collectstatic` funciona (en producción) y que en desarrollo `runserver` sirve los estáticos.
-4. Las imágenes subidas via admin (`MEDIA_URL`) deben verse en plantillas con `{{ article.featured_image.url }}`.
+
+Crear `news/static/news/style.css` con diseño "revista editorial oscura":
+
+### Paleta de colores
+- Fondo: `#0f0f10` o `#141414`
+- Superficies: `#1c1c1e`
+- Texto principal: `#ececec`
+- Acentos: `#ff6b35` (naranja) / `#ff7f6b` (coral)
+- Bordes sutiles: `#2c2c2e`
+
+### Tipografía
+- Titulares: `font-family: Georgia, "Times New Roman", serif;`
+- Cuerpo: `font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;`
+
+### Layout
+- **Cabecera**: Estilo revista, nav de categorías horizontal, responsive (hamburger en móvil)
+- **Portada**: 
+  - Noticia destacada (hero) grande arriba
+  - Grid de tarjetas (CSS Grid: `grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))`)
+- **Tarjetas**: Imagen (aspect-ratio 16:9), badge categoría (acento naranja), título, resumen, fecha, autor
+- **Sidebar**: Widgets (categorías, últimas noticias, tags)
+- **Detalle**: Imagen hero, cuerpo con buena legibilidad, meta (autor, categorías, fecha)
+- **Hover**: Transiciones suaves (`transition: all 0.2s ease`), elevación en tarjetas
+- **Responsive**: Breakpoints en 768px, 1024px
+- **Fallback imagen**: Degradado CSS `background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)` cuando no hay `featured_image`
+
+### En plantillas
+- `{% load static %}` al inicio
+- `<link rel="stylesheet" href="{% static 'news/style.css' %}">`
+- Imágenes: `{{ article.featured_image.url }}` (servidas via MEDIA_URL)
 
 ## Reglas
-- Código y comentarios en INGLÉS.
-- **Sin frameworks CSS** (ni Bootstrap, Tailwind, etc.) ni fuentes externas por CDN.
-- Solo CSS nativo, variables CSS (`--color-bg`, `--color-accent`, etc.) para mantener consistencia.
-- Seguir `docs/news-data-model-spec.md` como única fuente de verdad.
+
+- Sin frameworks CSS (Bootstrap, Tailwind, etc.)
+- Sin fuentes externas por CDN
+- Solo CSS nativo + variables CSS
+- Código y comentarios en INGLÉS

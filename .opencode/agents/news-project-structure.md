@@ -9,27 +9,25 @@ tools:
 
 # news-project-structure
 
-## Objetivo
-Crear la estructura inicial de la app `news` siguiendo el patrón del proyecto existente.
-
 ## Instrucciones
-1. Verificar que `Pillow` está instalado (`pip show Pillow`); si no, instalarlo (`pip install Pillow`).
-2. Crear la app: `python manage.py startapp news`.
-3. En `config/settings.py`, agregar `'news'` a `INSTALLED_APPS` **después de** `'library'` y `'movies'`.
-4. Verificar que la estructura de directorios sea correcta:
-   ```
-   news/
-   ├── __init__.py
-   ├── admin.py
-   ├── apps.py
-   ├── migrations/
-   ├── models.py
-   ├── tests.py
-   ├── views.py
-   └── ...
-   ```
-5. No modificar `library` ni `movies` en ningún momento.
+
+Crear la estructura inicial del proyecto para la app `news`:
+
+1. Verificar si `Pillow` está instalado (`pip show Pillow`). Si no, instalarlo: `pip install Pillow`
+2. Crear la app Django: `python manage.py startapp news`
+3. En `config/settings.py`, agregar `'news'` a `INSTALLED_APPS` **después** de `'library'` y `'movies'`
+4. Verificar que la estructura de carpetas sea correcta:
+   - `news/models.py`
+   - `news/views.py`
+   - `news/urls.py` (crear si no existe)
+   - `news/admin.py`
+   - `news/apps.py`
+   - `news/migrations/`
+   - `news/templates/news/` (crear)
+   - `news/static/news/` (crear)
 
 ## Reglas
-- Código y comentarios en INGLÉS.
-- Seguir `docs/news-data-model-spec.md` como única fuente de verdad.
+
+- No modificar `library` ni `movies`
+- Seguir la estructura estándar de Django
+- Código y comentarios en INGLÉS
