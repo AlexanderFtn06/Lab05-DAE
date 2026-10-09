@@ -27,7 +27,7 @@
     <!-- Categories -->
     <div class="article-categories">
         {% for cat in article.categories.all %}
-            <span class="card-category">{{ cat.name }}</span>
+            <a class="card-category" href="{% url 'news:category_detail' cat.slug %}">{{ cat.name }}</a>
         {% empty %}
             <span class="card-category card-category--none">Sin categoría</span>
         {% endfor %}
@@ -55,7 +55,7 @@
 
     <!-- Back to home link -->
     <p class="back-link">
-        <a href="#">Volver a la portada</a>
+        <a href="{% url 'news:home' %}">Volver a la portada</a>
     </p>
 </article>
 {% endblock %}

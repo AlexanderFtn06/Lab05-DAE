@@ -12,7 +12,7 @@
     <div class="card-meta">
         <div class="card-categories">
             {% for category in article.categories.all %}
-                <span class="card-category">{{ category.name }}</span>
+                <a class="card-category" href="{% url 'news:category_detail' category.slug %}">{{ category.name }}</a>
             {% empty %}
                 <span class="card-category card-category--none">Sin categoría</span>
             {% endfor %}
@@ -22,9 +22,9 @@
         </time>
     </div>
 
-    <!-- Title linking to detail (placeholder href) -->
+    <!-- Title linking to detail -->
     <h3 class="card-title">
-        <a href="#">{{ article.title }}</a>
+        <a href="{% url 'news:article_detail' article.slug %}">{{ article.title }}</a>
     </h3>
 
     <!-- Summary truncated to 30 words -->
