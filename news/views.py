@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.utils import timezone
 from .models import Article, Category
 
 
@@ -7,9 +6,7 @@ def home(request):
     """
     Home page view displaying the latest articles.
     """
-    articles = Article.objects.select_related("author").prefetch_related("categories").filter(
-        published_at__lte=timezone.now()
-    )
+    articles = Article.objects.select_related("author").prefetch_related("categories")
     categories = Category.objects.all()
     latest_article = articles.first()
 
