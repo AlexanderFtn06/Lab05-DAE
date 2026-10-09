@@ -1,144 +1,195 @@
-# Cinema Vault
+# Cinema Vault + Meridiano News
 ## Autor
 Alexander Faustino
-Proyecto de laboratorio 5 ("Administrador con Django") del curso
-**Desarrollo de Aplicaciones Empresariales**. Cinema Vault es un catálogo
-de películas donde cualquier visitante —sin necesidad de iniciar
-sesión— puede descubrir las mejor valoradas y filtrarlas por género,
-mientras que el panel de administración permite gestionar el catálogo
-con columnas, filtros, búsqueda y edición en línea de valoraciones.
+
+Proyecto acumulativo de los laboratorios 5 y 6 del curso **Desarrollo de Aplicaciones Empresariales**:
+
+- **Lab 5** — "Administrador con Django": app `movies` (catálogo de películas con admin personalizado y permisos).
+- **Lab 6** — "Motor de plantillas con Django": app `news` (portal de noticias "Meridiano" con herencia de plantillas, fragmentos reutilizables y diseño editorial oscuro).
+
+---
 
 ## Descripción
 
-La aplicación tiene dos capas claramente separadas:
+El proyecto tiene **tres apps** que conviven sin modificarse entre sí:
 
-- **Sitio público**: listado de películas ordenadas por valoración
-  promedio, filtro por género, y una página de detalle por película con
-  su sinopsis, géneros y todas sus reseñas individuales.
-- **Panel de administración**: gestión completa del catálogo
-  (películas, géneros, personas y valoraciones), con permisos
-  diferenciados entre un superusuario y un grupo de "editores" con
-  acceso restringido.
+| App | Responsabilidad | URLs |
+|-----|----------------|------|
+| `library` | Catálogo de libros, autores, editoriales y categorías (labs previos) | `/library/` |
+| `movies` | Catálogo de películas, géneros, personas y valoraciones (Lab 5) | `/`, `/genre/<slug>/`, `/<id>/` |
+| `news` | Portal de noticias "Meridiano" con plantillas, estilos y admin (Lab 6) | `/news/`, `/news/article/<slug>/`, `/news/category/<slug>/` |
 
-## Capacidades demostradas
+### Apps públicas (sin login)
 
-Este proyecto cumple las tres capacidades del laboratorio 5:
+| App | Qué muestra |
+|-----|-------------|
+| **Movies** | Listado de películas ordenadas por valoración promedio, filtro por género, detalle con sinopsis, géneros y reseñas. |
+| **News (Meridiano)** | Portada con noticia destacada + grid de tarjetas, detalle de artículo con imagen/autor/categorías/cuerpo, listado por categoría, diseño "revista editorial oscura" (fondo #0f0f10, acento naranja #ff6b35, tipografía serif/sans-serif, responsive). |
 
-1. **Configura el administrador de Django para gestionar un conjunto de
-   modelos relacionados.** Los cuatro modelos (`Movie`, `Genre`,
-   `Person`, `Rating`) están registrados en el admin, con sus relaciones
-   operando ahí mismo: el género (muchos a muchos) se asigna con un
-   selector horizontal, y las valoraciones (clave foránea) se dan de
-   alta como bloque en línea dentro del propio formulario de la
-   película. 
-2. **Personaliza el listado, los filtros y la búsqueda de cada modelo
-   con `ModelAdmin`.** El listado de películas muestra columnas útiles
-   (título, año, géneros, valoración promedio), con filtro lateral por
-   género y por año, y una barra de búsqueda por título y por nombre de
-   persona.
-3. **Administra el acceso al panel mediante usuarios, grupos y
-   permisos.** Existe un grupo "editores" con permisos para agregar y
-   modificar películas, pero sin permiso para eliminarlas; al entrar con
-   una cuenta de ese grupo, desaparecen tanto el acceso a
-   Usuarios/Grupos como el botón de eliminar.
+### Panel de administración (`/admin/`)
 
+- **Movies**: 4 modelos (`Movie`, `Genre`, `Person`, `Rating`) con `ModelAdmin` personalizado, inline de valoraciones, filtros, búsqueda, `filter_horizontal`, campos de solo lectura.
+- **News**: 3 modelos (`Author`, `Category`, `Article`) con `list_display` (incluye conteos eficientes), `list_filter`, `search_fields`, `prepopulated_fields` (slug auto), `filter_horizontal` para categorías, `date_hierarchy`.
+- **Permisos**: grupo "editors" (Lab 5) con add/change en Movie, sin delete; superusuario original preservado.
 
+---
 
-## Modelo de datos
+## Modelo de datos — News (Lab 6)
 
-| Modelo | Relación | Descripción |
-|---|---|---|
-| `Genre` | — | Género cinematográfico (Acción, Comedia, Drama, Ciencia Ficción). |
-| `Person` | — | Director o actor: nombre, rol, foto. |
-| `Movie` | `ManyToManyField` → `Genre` | Película: título, año, sinopsis, póster, fecha de creación/modificación. |
-| `Rating` | `ForeignKey` → `Movie` (CASCADE) | Valoración de 1 a 10 con comentario, asociada a una película. |
+| Modelo | Campos clave | Relaciones |
+|--------|--------------|------------|
+| `Author` | `first_name`, `last_name`, `bio`, `photo` | — |
+| `Category` | `name` (unique), `slug` (unique), `description` | — |
+| `Article` | `title`, `slug` (unique), `summary`, `body`, `featured_image`, `published_at` | `author` → FK `Author` (`PROTECT`, `related_name="articles"`); `categories` → M2M `Category` (`related_name="articles"`) |
 
-El esquema completo está en
-[`docs/movies-data-model-spec.md`](docs/movies-data-model-spec.md).
+> Justificación: `PROTECT` evita borrar un autor con artículos publicados; M2M permite que un artículo esté en varias categorías y viceversa.
 
+Esquema completo en [`docs/news-data-model-spec.md`](docs/news-data-model-spec.md).
 
+---
 
-## Metodología de desarrollo (OpenCode)
+## Capacidades demostradas (Lab 6)
 
-Este proyecto se desarrolló usando [OpenCode](https://opencode.ai), un
-agente de código con IA, apoyado en **sub-agentes especializados**, cada
-uno encargado de una parte específica del procedimiento:
+1. **Motor de plantillas con herencia y fragmentos**: `base.html` (bloques `title`, `content`, `sidebar`), fragmento `_article_card.html` reutilizado en portada y listado por categoría.
+2. **Datos en plantillas sin lógica de negocio**: variables, `for`/`empty`, `if`, filtros `date`, `truncatewords`, `linebreaks`; **sin `|safe` ni `autoescape off`**.
+3. **Gestión de contenido desde el admin**: 3 categorías, 2 autores, 6 noticias (2 por categoría, al menos 1 en 2 categorías) dadas de alta en `/admin/news/` y publicadas en el portal.
+4. **Escapado automático verificado**: HTML en body se muestra como texto plano (entidades); contraste con `|safe` solo documentado en shell.
 
-| Sub-agente | Encargado de |
-|---|---|
-| `movies-project-structure` | Crear la app `movies` e instalar Pillow. |
-| `movies-models` | Declarar los 4 modelos y sus relaciones. |
-| `movies-migrations` | Generar y aplicar migraciones. |
-| `movies-admin-basic` | Registro simple de los modelos en el admin. |
-| `movies-admin-custom` | `ModelAdmin` personalizado, inline, campos de solo lectura. |
-| `movies-admin-data` | Carga de datos de prueba. |
-| `movies-permissions` | Grupo "editores" y control de permisos. |
-| `movies-views` | Vistas públicas de listado, filtro por género y detalle. |
-| `movies-documentation` | Evidencia del laboratorio. |
+---
+
+## Estructura de plantillas (News)
+
+```
+templates/
+└── news/
+    └── base.html              # Layout global: header, nav, main(content+sidebar), footer
+news/
+└── templates/
+    └── news/
+        ├── base.html          # (no existe, hereda de templates/news/base.html)
+        ├── _article_card.html # Fragmento reutilizable (include)
+        ├── home.html          # Portada: hero + grid + empty-state
+        ├── article_detail.html# Detalle: imagen, meta, categorías, body|linebreaks, author-box
+        └── category_detail.html # Listado por categoría: reutiliza _article_card.html
+```
+
+**Por qué reutilizar `_article_card.html`**: DRY, consistencia visual, mantenimiento único, separación presentación/lógica.
+
+---
+
+## Estilos (Lab 6 — Paso 10)
+
+- **Archivo**: `news/static/news/style.css` (cargado con `{% load static %}`)
+- **Diseño**: "Revista editorial oscura"
+  - Fondo `#0f0f10`, superficies `#1c1c1e`, texto `#ececec`, acento `#ff6b35`/`#ff7f6b`
+  - Titulares en **serif** (Georgia), cuerpo en **sans-serif** del sistema
+  - Cabecera tipo revista, hero + grid responsive (`auto-fill, minmax(280px, 1fr)`)
+  - Tarjetas con hover elevation, categorías como badges naranja
+  - Fallback degradado cuando no hay imagen destacada
+  - **Sin frameworks ni fuentes externas por CDN**
+
+---
+
+## Metodología (OpenCode)
+
+Desarrollado con **sub-agentes especializados** (`.opencode/agents/`):
+
+| Sub-agente | Laboratorio | Encargado de |
+|------------|-------------|--------------|
+| `news-project-structure` | 6 | Crear app `news`, instalar Pillow, `INSTALLED_APPS` |
+| `news-settings` | 6 | `TEMPLATES[DIRS]`, estáticos, medios (sin duplicar) |
+| `news-models` | 6 | Modelos `Author`, `Category`, `Article` + migraciones |
+| `news-base-template` | 6 | `templates/news/base.html` con bloques |
+| `news-partials` | 6 | `news/templates/news/_article_card.html` |
+| `news-pages` | 6 | Vistas y plantillas: home, detail, category |
+| `news-urls` | 6 | `app_name="news"`, 3 rutas, include en `config/urls.py` ANTES de raíz |
+| `news-static-design` | 6 | `news/static/news/style.css` diseño oscuro responsive |
+| `news-admin` | 6 | `ModelAdmin` personalizado + carga de 6 noticias |
+| `news-escaping` | 6 | Prueba autoescape + documentación |
+| `news-documentation` | 6 | Entregable formato curso |
+
+*(Los sub-agentes de `movies-*` y `django-*` corresponden a labs previos y se mantienen intactos.)*
+
+---
 
 ## Instalación y uso
 
 ```bash
-# 1. Clonar el repositorio
+# 1. Clonar
 git clone <url-del-repositorio>
-cd Lab05-DAE
+cd Lab04-DAE
 
-# 2. Crear y activar un entorno virtual (recomendado)
+# 2. Entorno virtual
 python -m venv venv
 venv\Scripts\activate        # Windows
 source venv/bin/activate     # Linux / macOS
 
-# 3. Instalar dependencias
+# 3. Dependencias
 pip install -r requirements.txt
 
-# 4. Aplicar migraciones
+# 4. Migraciones
 python manage.py migrate
 
-# 5. Crear un superusuario para acceder al admin
+# 5. Superusuario (si no existe)
 python manage.py createsuperuser
 
-# 6. Correr el servidor de desarrollo
+# 6. Servidor
 python manage.py runserver
 ```
 
-Luego abre:
-- `http://127.0.0.1:8000/` — catálogo público de películas mejor valoradas
-- `http://127.0.0.1:8000/genre/<slug>/` — recomendaciones filtradas por género
-- `http://127.0.0.1:8000/<id>/` — detalle de una película
-- `http://127.0.0.1:8000/admin/` — panel de administración
+### URLs principales
 
-## Capturas de funcionamiento
+| App | URL | Descripción |
+|-----|-----|-------------|
+| Movies | `http://127.0.0.1:8000/` | Catálogo público películas |
+| Movies | `http://127.0.0.1:8000/genre/<slug>/` | Filtrado por género |
+| Movies | `http://127.0.0.1:8000/<id>/` | Detalle película |
+| News | `http://127.0.0.1:8000/news/` | Portada Meridiano |
+| News | `http://127.0.0.1:8000/news/article/<slug>/` | Detalle noticia |
+| News | `http://127.0.0.1:8000/news/category/<slug>/` | Listado por categoría |
+| Admin | `http://127.0.0.1:8000/admin/` | Panel de administración |
+| Library | `http://127.0.0.1:8000/library/` | Catálogo libros (labs previos) |
 
-### Panel de administración
+---
 
-**1. Sección MOVIES del admin con los 4 modelos listados**
+## Capturas de funcionamiento — News (Lab 6)
 
-<img width="1118" height="734" alt="01-admin-modelos-movies" src="https://github.com/user-attachments/assets/1aa5bbe0-fc72-4014-9bf9-dd826bbbd572" />
+### Portal público "Meridiano"
 
-**2. Listado de películas en el admin, con columnas, filtros y búsqueda**
+**1. Portada `/news/`** — Hero (noticia destacada) + grid de tarjetas + sidebar categorías
 
-<img width="1920" height="962" alt="02-admin-movies-listado-filtros" src="https://github.com/user-attachments/assets/cccd558c-f6c8-425b-8a38-68d67976ac71" />
+**2. Detalle `/news/article/<slug>/`** — Imagen, título, meta (fecha/autor), categorías (links), cuerpo con párrafos, author-box, "Volver a la portada"
 
-**3. Detalle de una película en el admin: valoraciones en línea y campos de auditoría de solo lectura**
+**3. Categoría `/news/category/tecnologia/`** — 2 noticias, reutiliza `_article_card.html`
 
-<img width="1623" height="809" alt="03-admin-movie-detalle-inline-readonly" src="https://github.com/user-attachments/assets/c9f2a817-82f7-45ca-82ea-c32c80d8d71e" />
+**4. Categoría `/news/category/cultura/`** — 2 noticias (1 compartida con Tecnología)
 
-### Permisos por grupo
+**5. Categoría `/news/category/deportes/`** — 2 noticias
 
-**4. Panel de administración visto por el superusuario, con acceso a Usuarios y Grupos**
+**6. Responsive** — Vista móvil (1 columna), tablet (2), desktop (3-4)
 
-<img width="1118" height="734" alt="04-admin-superusuario-panel" src="https://github.com/user-attachments/assets/07dd406e-1885-4160-95e8-707c738770ae" />
+### Admin News
 
-**5. Mismo panel visto por el usuario del grupo "editores", sin acceso a Usuarios/Grupos**
+**7. Listado Articles** — Columnas: título, autor, fecha, categorías, imagen; filtros laterales
 
-<img width="1920" height="554" alt="05-admin-editor-panel-restringido" src="https://github.com/user-attachments/assets/a505fea4-d4ac-4f3a-a8d1-3c968ca684b7" />
+**8. Listado Categories** — name, slug, noticias (anotado eficiente)
 
-### Sitio público
+**9. Listado Authors** — Nombre completo, noticias (anotado eficiente)
 
-<img width="1920" height="954" alt="image" src="https://github.com/user-attachments/assets/6232fe11-0ef6-4b39-bced-986973d4883c" />
+**10. Formulario Article** — prepopulated slug, filter_horizontal categories, date_hierarchy
 
-<img width="1905" height="958" alt="image" src="https://github.com/user-attachments/assets/e84a05fb-3191-4711-9c66-1cfb0ee810f8" />
+### Escapado automático (Paso 12)
 
-<img width="1810" height="941" alt="image" src="https://github.com/user-attachments/assets/d7e0be3f-1ac6-4ee9-9f29-7f9ecc64a8c8" />
+**11. Noticia de prueba con HTML** — Se renderiza como texto plano (entidades `<script>...`)
 
-<img width="1781" height="935" alt="image" src="https://github.com/user-attachments/assets/0953acb4-9099-40fc-9065-a31907b4b0f1" />
+**12. Shell con `|safe`** — Contraste documentado (solo en docs, nunca en plantillas)
+
+### Estructura del proyecto
+
+**13. Árbol en editor** — `news/`, `templates/news/`, `news/templates/news/`, `news/static/news/`, `media/articles/`
+
+---
+
+## Licencia
+
+Proyecto educativo — Curso Desarrollo de Aplicaciones Empresariales.
