@@ -1,0 +1,61 @@
+{% extends "news/base.html" %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block content %}
+<article class="article-detail">
+    <!-- Featured image or placeholder fallback -->
+    {% if article.featured_image %}
+        <img class="detail-image" src="{{ article.featured_image.url }}" alt="{{ article.title }}">
+    {% else %}
+        <div class="detail-image detail-image--placeholder" aria-label="Sin imagen"></div>
+    {% endif %}
+
+    <!-- Article title -->
+    <h1>{{ article.title }}</h1>
+
+    <!-- Metadata: publication date and author -->
+    <div class="article-meta">
+        <time class="article-date" datetime="{{ article.published_at|date:"c" }}">
+            {{ article.published_at|date:"d/m/Y" }}
+        </time>
+        <span class="article-author">
+            Por {{ article.author.first_name }} {{ article.author.last_name }}
+        </span>
+    </div>
+
+    <!-- Categories -->
+    <div class="article-categories">
+        {% for cat in article.categories.all %}
+            <span class="card-category">{{ cat.name }}</span>
+        {% empty %}
+            <span class="card-category card-category--none">Sin categoría</span>
+        {% endfor %}
+    </div>
+
+    <!-- Article body -->
+    <div class="article-body">
+        {{ article.body|linebreaks }}
+    </div>
+
+    <!-- Author box -->
+    {% if article.author.bio %}
+        <aside class="author-box">
+            {% if article.author.photo %}
+                <img class="author-photo" src="{{ article.author.photo.url }}" alt="{{ article.author.first_name }} {{ article.author.last_name }}">
+            {% else %}
+                <div class="author-photo author-photo--placeholder" aria-label="Sin foto"></div>
+            {% endif %}
+            <div class="author-info">
+                <h3>{{ article.author.first_name }} {{ article.author.last_name }}</h3>
+                <p>{{ article.author.bio }}</p>
+            </div>
+        </aside>
+    {% endif %}
+
+    <!-- Back to home link -->
+    <p class="back-link">
+        <a href="#">Volver a la portada</a>
+    </p>
+</article>
+{% endblock %}
