@@ -1,40 +1,36 @@
-# Cinema Vault + Meridiano News
+# Meridiano News
 ## Autor
 Alexander Faustino
 
-Proyecto acumulativo de los laboratorios 5 y 6 del curso **Desarrollo de Aplicaciones Empresariales**:
+**Laboratorio 6** — "Motor de plantillas con Django" del curso **Desarrollo de Aplicaciones Empresariales**.
 
-- **Lab 5** — "Administrador con Django": app `movies` (catálogo de películas con admin personalizado y permisos).
-- **Lab 6** — "Motor de plantillas con Django": app `news` (portal de noticias "Meridiano" con herencia de plantillas, fragmentos reutilizables y diseño editorial oscuro).
+App `news`: portal de noticias "Meridiano" con herencia de plantillas, fragmentos reutilizables, diseño editorial oscuro y panel de administración personalizado.
 
 ---
 
 ## Descripción
 
-El proyecto tiene **tres apps** que conviven sin modificarse entre sí:
+Aplicación **news** independiente que se integra en un proyecto Django existente (convive con `library` y `movies` sin modificarlas).
 
-| App | Responsabilidad | URLs |
-|-----|----------------|------|
-| `library` | Catálogo de libros, autores, editoriales y categorías (labs previos) | `/library/` |
-| `movies` | Catálogo de películas, géneros, personas y valoraciones (Lab 5) | `/`, `/genre/<slug>/`, `/<id>/` |
-| `news` | Portal de noticias "Meridiano" con plantillas, estilos y admin (Lab 6) | `/news/`, `/news/article/<slug>/`, `/news/category/<slug>/` |
+### Portal público (sin login) — `/news/`
 
-### Apps públicas (sin login)
+| Página | Qué muestra |
+|--------|-------------|
+| **Portada** `/news/` | Hero (noticia destacada) + grid de tarjetas + sidebar con categorías |
+| **Detalle** `/news/article/<slug>/` | Imagen destacada, título, meta (fecha/autor), categorías (links), cuerpo con párrafos, author-box, "Volver a la portada" |
+| **Categoría** `/news/category/<slug>/` | Listado filtrado (2 por categoría), reutiliza fragmento `_article_card.html` |
 
-| App | Qué muestra |
-|-----|-------------|
-| **Movies** | Listado de películas ordenadas por valoración promedio, filtro por género, detalle con sinopsis, géneros y reseñas. |
-| **News (Meridiano)** | Portada con noticia destacada + grid de tarjetas, detalle de artículo con imagen/autor/categorías/cuerpo, listado por categoría, diseño "revista editorial oscura" (fondo #0f0f10, acento naranja #ff6b35, tipografía serif/sans-serif, responsive). |
+### Panel de administración — `/admin/news/`
 
-### Panel de administración (`/admin/`)
-
-- **Movies**: 4 modelos (`Movie`, `Genre`, `Person`, `Rating`) con `ModelAdmin` personalizado, inline de valoraciones, filtros, búsqueda, `filter_horizontal`, campos de solo lectura.
-- **News**: 3 modelos (`Author`, `Category`, `Article`) con `list_display` (incluye conteos eficientes), `list_filter`, `search_fields`, `prepopulated_fields` (slug auto), `filter_horizontal` para categorías, `date_hierarchy`.
-- **Permisos**: grupo "editors" (Lab 5) con add/change en Movie, sin delete; superusuario original preservado.
+| Modelo | Personalización |
+|--------|-----------------|
+| `Author` | `list_display`: nombre completo, noticias (anotado); `search_fields`: first_name, last_name |
+| `Category` | `list_display`: name, slug, noticias (anotado); `prepopulated_fields`: slug desde name; `search_fields`: name, description |
+| `Article` | `list_display`: title, author, published_at, categorías; `list_filter`: author, categories, published_at; `search_fields`: title, summary, body; `prepopulated_fields`: slug desde title; `filter_horizontal`: categories; `date_hierarchy`: published_at; `list_select_related`: author |
 
 ---
 
-## Modelo de datos — News (Lab 6)
+## Modelo de datos
 
 | Modelo | Campos clave | Relaciones |
 |--------|--------------|------------|
@@ -42,13 +38,13 @@ El proyecto tiene **tres apps** que conviven sin modificarse entre sí:
 | `Category` | `name` (unique), `slug` (unique), `description` | — |
 | `Article` | `title`, `slug` (unique), `summary`, `body`, `featured_image`, `published_at` | `author` → FK `Author` (`PROTECT`, `related_name="articles"`); `categories` → M2M `Category` (`related_name="articles"`) |
 
-> Justificación: `PROTECT` evita borrar un autor con artículos publicados; M2M permite que un artículo esté en varias categorías y viceversa.
+> **Justificaciones**: `PROTECT` evita borrar un autor con artículos publicados; M2M permite que un artículo esté en varias categorías y viceversa.
 
 Esquema completo en [`docs/news-data-model-spec.md`](docs/news-data-model-spec.md).
 
 ---
 
-## Capacidades demostradas (Lab 6)
+## Capacidades demostradas
 
 1. **Motor de plantillas con herencia y fragmentos**: `base.html` (bloques `title`, `content`, `sidebar`), fragmento `_article_card.html` reutilizado en portada y listado por categoría.
 2. **Datos en plantillas sin lógica de negocio**: variables, `for`/`empty`, `if`, filtros `date`, `truncatewords`, `linebreaks`; **sin `|safe` ni `autoescape off`**.
@@ -57,7 +53,7 @@ Esquema completo en [`docs/news-data-model-spec.md`](docs/news-data-model-spec.m
 
 ---
 
-## Estructura de plantillas (News)
+## Estructura de plantillas
 
 ```
 templates/
@@ -66,7 +62,6 @@ templates/
 news/
 └── templates/
     └── news/
-        ├── base.html          # (no existe, hereda de templates/news/base.html)
         ├── _article_card.html # Fragmento reutilizable (include)
         ├── home.html          # Portada: hero + grid + empty-state
         ├── article_detail.html# Detalle: imagen, meta, categorías, body|linebreaks, author-box
@@ -77,38 +72,63 @@ news/
 
 ---
 
-## Estilos (Lab 6 — Paso 10)
+## Estilos — "Revista editorial oscura"
 
 - **Archivo**: `news/static/news/style.css` (cargado con `{% load static %}`)
-- **Diseño**: "Revista editorial oscura"
-  - Fondo `#0f0f10`, superficies `#1c1c1e`, texto `#ececec`, acento `#ff6b35`/`#ff7f6b`
-  - Titulares en **serif** (Georgia), cuerpo en **sans-serif** del sistema
-  - Cabecera tipo revista, hero + grid responsive (`auto-fill, minmax(280px, 1fr)`)
-  - Tarjetas con hover elevation, categorías como badges naranja
-  - Fallback degradado cuando no hay imagen destacada
-  - **Sin frameworks ni fuentes externas por CDN**
+- **Variables CSS** (`:root`):
+  - Fondo `#0f0f10`, superficies `#1c1c1e`, texto `#ececec`, texto atenuado `#9a9a9f`
+  - Acento naranja `#ff6b35`, acento coral `#ff7f6b`, borde `#2a2a2d`
+- **Tipografía**: Titulares **serif** (Georgia, "Times New Roman"), cuerpo **sans-serif** del sistema (system-ui, -apple-system, Segoe UI)
+- **Layout**: Cabecera tipo revista, hero + grid responsive (`auto-fill, minmax(280px, 1fr)`), sidebar 280px
+- **Componentes**: Tarjetas con hover elevation, categorías como badges naranja, fallback degradado sin imagen, author-box con borde izquierdo de acento
+- **Responsive**: Breakpoints 1024px, 768px, 480px
+- **Sin frameworks ni fuentes externas por CDN**
 
 ---
 
-## Metodología (OpenCode)
+## URLs
 
-Desarrollado con **sub-agentes especializados** (`.opencode/agents/`):
+| Patrón | Nombre | Descripción |
+|--------|--------|-------------|
+| `/news/` | `news:home` | Portada |
+| `/news/article/<slug>/` | `news:article_detail` | Detalle de noticia |
+| `/news/category/<slug>/` | `news:category_detail` | Listado por categoría |
 
-| Sub-agente | Laboratorio | Encargado de |
-|------------|-------------|--------------|
-| `news-project-structure` | 6 | Crear app `news`, instalar Pillow, `INSTALLED_APPS` |
-| `news-settings` | 6 | `TEMPLATES[DIRS]`, estáticos, medios (sin duplicar) |
-| `news-models` | 6 | Modelos `Author`, `Category`, `Article` + migraciones |
-| `news-base-template` | 6 | `templates/news/base.html` con bloques |
-| `news-partials` | 6 | `news/templates/news/_article_card.html` |
-| `news-pages` | 6 | Vistas y plantillas: home, detail, category |
-| `news-urls` | 6 | `app_name="news"`, 3 rutas, include en `config/urls.py` ANTES de raíz |
-| `news-static-design` | 6 | `news/static/news/style.css` diseño oscuro responsive |
-| `news-admin` | 6 | `ModelAdmin` personalizado + carga de 6 noticias |
-| `news-escaping` | 6 | Prueba autoescape + documentación |
-| `news-documentation` | 6 | Entregable formato curso |
+Todas las URLs en plantillas usan `{% url 'news:...' %}` (ninguna hardcodeada).
 
-*(Los sub-agentes de `movies-*` y `django-*` corresponden a labs previos y se mantienen intactos.)*
+---
+
+## Datos de prueba (cargados vía admin)
+
+- **3 Categorías**: Tecnología (`tecnologia`), Deportes (`deportes`), Cultura (`cultura`)
+- **2 Autores**: María González, Carlos Rodríguez (con bio)
+- **6 Noticias**: 2 por categoría, la #2 (Realidad virtual) en Tecnología + Cultura
+- **Imágenes**: 5 archivos en `media/articles/` (tech-ia.PNG, tech-cultura.PNG, deporte1.PNG, deporte2.PNG, cultura.PNG)
+
+---
+
+## Verificación de escapado (Paso 12)
+
+- Noticia de prueba con `<script>alert('xss')</script> <b>bold</b>` en el body → se renderiza como **texto plano** (entidades escapadas)
+- Contraste con `|safe` documentado solo en shell/docs, **nunca en plantillas**
+
+---
+
+## Sub-agentes usados (OpenCode)
+
+| Sub-agente | Encargado de |
+|------------|--------------|
+| `news-project-structure` | Crear app `news`, instalar Pillow, `INSTALLED_APPS` |
+| `news-settings` | `TEMPLATES[DIRS]`, estáticos, medios (sin duplicar) |
+| `news-models` | Modelos `Author`, `Category`, `Article` + migraciones |
+| `news-base-template` | `templates/news/base.html` con bloques |
+| `news-partials` | `news/templates/news/_article_card.html` |
+| `news-pages` | Vistas y plantillas: home, detail, category |
+| `news-urls` | `app_name="news"`, 3 rutas, include en `config/urls.py` ANTES de raíz |
+| `news-static-design` | `news/static/news/style.css` diseño oscuro responsive |
+| `news-admin` | `ModelAdmin` personalizado + carga de 6 noticias |
+| `news-escaping` | Prueba autoescape + documentación |
+| `news-documentation` | Entregable formato curso |
 
 ---
 
@@ -139,57 +159,39 @@ python manage.py runserver
 
 ### URLs principales
 
-| App | URL | Descripción |
-|-----|-----|-------------|
-| Movies | `http://127.0.0.1:8000/` | Catálogo público películas |
-| Movies | `http://127.0.0.1:8000/genre/<slug>/` | Filtrado por género |
-| Movies | `http://127.0.0.1:8000/<id>/` | Detalle película |
-| News | `http://127.0.0.1:8000/news/` | Portada Meridiano |
-| News | `http://127.0.0.1:8000/news/article/<slug>/` | Detalle noticia |
-| News | `http://127.0.0.1:8000/news/category/<slug>/` | Listado por categoría |
-| Admin | `http://127.0.0.1:8000/admin/` | Panel de administración |
-| Library | `http://127.0.0.1:8000/library/` | Catálogo libros (labs previos) |
+| URL | Descripción |
+|-----|-------------|
+| `http://127.0.0.1:8000/news/` | Portada Meridiano |
+| `http://127.0.0.1:8000/news/article/<slug>/` | Detalle noticia |
+| `http://127.0.0.1:8000/news/category/<slug>/` | Listado por categoría |
+| `http://127.0.0.1:8000/admin/` | Panel de administración (News, Movies, Library) |
 
 ---
 
-## Capturas de funcionamiento — News (Lab 6)
+## Capturas para la entrega
 
-### Portal público "Meridiano"
 
-**1. Portada `/news/`** — Hero (noticia destacada) + grid de tarjetas + sidebar categorías
+**Panel de admin**
 
-**2. Detalle `/news/article/<slug>/`** — Imagen, título, meta (fecha/autor), categorías (links), cuerpo con párrafos, author-box, "Volver a la portada"
+![alt text](image-5.png)
 
-**3. Categoría `/news/category/tecnologia/`** — 2 noticias, reutiliza `_article_card.html`
+![alt text](image-7.png)
 
-**4. Categoría `/news/category/cultura/`** — 2 noticias (1 compartida con Tecnología)
+![alt text](image-8.png)
 
-**5. Categoría `/news/category/deportes/`** — 2 noticias
+![alt text](image-9.png)
 
-**6. Responsive** — Vista móvil (1 columna), tablet (2), desktop (3-4)
+![alt text](image-10.png)
 
-### Admin News
 
-**7. Listado Articles** — Columnas: título, autor, fecha, categorías, imagen; filtros laterales
+**Sitio web**
 
-**8. Listado Categories** — name, slug, noticias (anotado eficiente)
+![alt text](image-11.png)
 
-**9. Listado Authors** — Nombre completo, noticias (anotado eficiente)
+![alt text](image-12.png)
 
-**10. Formulario Article** — prepopulated slug, filter_horizontal categories, date_hierarchy
+![alt text](image-13.png)
 
-### Escapado automático (Paso 12)
+![alt text](image-14.png)
 
-**11. Noticia de prueba con HTML** — Se renderiza como texto plano (entidades `<script>...`)
-
-**12. Shell con `|safe`** — Contraste documentado (solo en docs, nunca en plantillas)
-
-### Estructura del proyecto
-
-**13. Árbol en editor** — `news/`, `templates/news/`, `news/templates/news/`, `news/static/news/`, `media/articles/`
-
----
-
-## Licencia
-
-Proyecto educativo — Curso Desarrollo de Aplicaciones Empresariales.
+![alt text](image-15.png)
