@@ -33,3 +33,19 @@ def article_detail(request, slug):
         "categories": categories,
     }
     return render(request, "news/article_detail.html", context)
+
+
+def category_detail(request, slug):
+    """
+    Category detail view displaying all articles in a specific category.
+    """
+    category = get_object_or_404(Category, slug=slug)
+    articles = category.articles.select_related("author").prefetch_related("categories")
+    categories = Category.objects.all()
+
+    context = {
+        "category": category,
+        "articles": articles,
+        "categories": categories,
+    }
+    return render(request, "news/category_detail.html", context)

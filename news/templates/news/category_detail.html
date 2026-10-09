@@ -1,0 +1,29 @@
+{% extends "news/base.html" %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block content %}
+    <h1>Categoría: {{ category.name }}</h1>
+
+    {% if category.description %}
+        <p class="category-description">{{ category.description }}</p>
+    {% endif %}
+
+    <p class="article-count">
+        "{{ articles|length }} noticia{{ articles|length|pluralize }}"
+    </p>
+
+    <section class="article-grid">
+        {% for article in articles %}
+            <div class="article-slot">
+                {% include "news/_article_card.html" with article=article %}
+            </div>
+        {% empty %}
+            <p class="empty-state">Aún no hay noticias en esta categoría.</p>
+        {% endfor %}
+    </section>
+
+    <p class="back-link">
+        <a href="#">Volver a la portada</a>
+    </p>
+{% endblock %}
