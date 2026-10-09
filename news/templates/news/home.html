@@ -1,0 +1,27 @@
+{% extends "news/base.html" %}
+
+{% block title %}Portada{% endblock %}
+
+{% block content %}
+    <h1>Últimas noticias</h1>
+
+    <p class="articles-count">
+        {{ articles|length }} noticia{{ articles|length|pluralize }}
+    </p>
+
+    {% if latest_article %}
+        <p class="latest-publication">
+            Última publicación: {{ latest_article.published_at|date:"d/m/Y" }}
+        </p>
+    {% endif %}
+
+    <section class="article-grid">
+        {% for article in articles %}
+            <div class="article-slot{% if forloop.first %} article-slot--featured{% endif %}">
+                {% include "news/_article_card.html" with article=article %}
+            </div>
+        {% empty %}
+            <p class="empty-state">Aún no hay noticias publicadas.</p>
+        {% endfor %}
+    </section>
+{% endblock %}
